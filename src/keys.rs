@@ -1,4 +1,4 @@
-use strum::EnumIter;
+use strum::{EnumIter, IntoEnumIterator};
 
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, EnumIter, clap::ValueEnum)]
 #[repr(u8)]
@@ -29,25 +29,25 @@ pub enum KeyCode {
   X,
   Y,
   Z,
-  #[value(name="1")]
+  #[value(name = "1")]
   One,
-  #[value(name="2")]
+  #[value(name = "2")]
   Two,
-  #[value(name="3")]
+  #[value(name = "3")]
   Three,
-  #[value(name="4")]
+  #[value(name = "4")]
   Four,
-  #[value(name="5")]
+  #[value(name = "5")]
   Five,
-  #[value(name="6")]
+  #[value(name = "6")]
   Six,
-  #[value(name="7")]
+  #[value(name = "7")]
   Seven,
-  #[value(name="8")]
+  #[value(name = "8")]
   Eight,
-  #[value(name="9")]
+  #[value(name = "9")]
   Nine,
-  #[value(name="0")]
+  #[value(name = "0")]
   Zero,
   Enter,
   Esc,
@@ -117,4 +117,41 @@ pub enum KeyCode {
   RightShift,
   RightAlt,
   RightWin,
+}
+
+impl KeyCode {
+  pub fn is_alpha(&self) -> bool {
+    let range = (Self::A as u8)..=(Self::Z as u8);
+    range.contains(&(*self as u8))
+  }
+  pub fn is_numeric(&self) -> bool {
+    let range = (Self::One as u8)..=(Self::Zero as u8);
+    range.contains(&(*self as u8))
+  }
+
+  pub fn is_fn(&self) -> bool {
+    let range = (Self::F1 as u8)..=(Self::F12 as u8);
+    range.contains(&(*self as u8))
+  }
+}
+
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq, clap::ValueEnum)]
+pub enum KeyGroup {
+  Alpha,
+  AlphaNum,
+  Num,
+  Fn,
+}
+
+impl KeyGroup {
+  pub fn to_keys(&self) -> Vec<KeyCode> {
+    match self {
+      Self::Alpha => KeyCode::iter().filter(|k| k.is_alpha()).collect(),
+      Self::AlphaNum => KeyCode::iter()
+        .filter(|k| k.is_alpha() || k.is_numeric())
+        .collect(),
+      Self::Num => KeyCode::iter().filter(|k| k.is_numeric()).collect(),
+      Self::Fn => KeyCode::iter().filter(|k| k.is_fn()).collect(),
+    }
+  }
 }

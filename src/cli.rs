@@ -39,12 +39,22 @@ pub struct KeyArgs {
   brightness: u8,
 }
 
+#[derive(clap::Args, Debug)]
+#[command(version, about, long_about = None)]
+pub struct GroupArgs {
+  groups: Vec<crate::keys::KeyGroup>,
+  #[arg(short, long, default_value = "100")]
+  brightness: u8,
+}
+
 #[derive(Parser, Debug)]
 pub enum Command {
   /// Invoke one of the built-in modes
   SetMode(ModeArgs),
   /// Set a list of keys to be on or off
   SetKeys(KeyArgs),
+  /// Set a group of keys to be on or off
+  SetGroups(GroupArgs),
   /// [dev] run the key-code test helper
   KeyTest(KeyTestArgs),
 }
@@ -63,6 +73,7 @@ impl<'a> CLI<'a> {
     match self.cmd {
       Command::SetMode(ref args) => self.set_mode(&args),
       Command::SetKeys(ref args) => self.set_keys(&args),
+      Command::SetGroups(ref args) => self.set_groups(&args),
       Command::KeyTest(ref args) => self.key_test(&args),
     }
   }
@@ -83,15 +94,28 @@ impl<'a> CLI<'a> {
   fn set_keys(&self, args: &KeyArgs) -> CLIResult {
     let brightness = ((args.brightness.clamp(0, 100) as f32 / 100.0) * 255.0) as u8;
 
-    args.keys.chunks(12).for_each(|slice| {
+    for slice in args.keys.chunks(12) {
       let indexes = slice.iter().map(|v| *v as u8).collect();
       let cmd = KbdCmd::KeyColor {
         indexes,
         brightness,
       };
-      self.kbd.exec(&cmd).ok();
-    });
+      self.kbd.exec(&cmd)?;
+    }
+
     self.kbd.commit()?;
+    Ok(())
+  }
+
+  fn set_groups(&self, args: &GroupArgs) -> CLIResult {
+    for group in &args.groups {
+      let keys = group.to_keys();
+      let key_args = KeyArgs {
+        keys,
+        brightness: args.brightness,
+      };
+      self.set_keys(&key_args)?;
+    }
     Ok(())
   }
 
