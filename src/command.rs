@@ -54,6 +54,7 @@ pub enum Command {
     zone: Zone,
     dir: WaveDirection,
     speed: u16,
+    brightness: u8,
   },
   KeyColor,
 }
@@ -83,8 +84,8 @@ impl Command {
         zone,
         dir,
         speed,
+        brightness,
       } => {
-        let (r, g, b) = (128, 128, 128); // todo: allow specifying
         buf.extend_from_slice(&[
           0x11,
           0xff,
@@ -92,9 +93,9 @@ impl Command {
           0x3c,
           *zone as u8,
           *mode as u8,
-          r,
-          g,
-          b,
+          *brightness,
+          *brightness,
+          *brightness,
           (speed >> 8) as u8,   // no idea if all this speed stuff is correct.
           (speed & 0xff) as u8, // cycle ms,
           (speed >> 8) as u8,

@@ -13,6 +13,8 @@ pub struct ModeArgs {
   zone: Zone,
   #[arg(short, long, default_value = "1")]
   speed: f32,
+  #[arg(short, long, default_value = "100")]
+  brightness: u8,
 }
 
 #[derive(Parser, Debug)]
@@ -38,6 +40,7 @@ impl<'a> CLI<'a> {
           speed: (m.speed * 1_000.0) as u16,
           mode: m.mode,
           zone: m.zone,
+          brightness: ((m.brightness.clamp(0, 100) as f32 / 100.0) * 255.0) as u8,
         };
         self.kbd.exec(&mode)?;
         self.kbd.exec(&KbdCmd::Commit)?;
