@@ -10,6 +10,7 @@ mod cli;
 mod command;
 /// Provides a basic wrapper around the HidApi for writing commands to the keyboard.
 mod keyboard;
+mod keys;
 
 use cli::{Command, CLI};
 use keyboard::Keyboard;

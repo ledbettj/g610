@@ -43,7 +43,7 @@ pub enum WaveDirection {
   CenterIn = 8,
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub enum Command {
   Commit,
   StartupMode {
@@ -56,7 +56,10 @@ pub enum Command {
     speed: u16,
     brightness: u8,
   },
-  KeyColor,
+  KeyColor {
+    indexes: Vec<u8>,
+    brightness: u8,
+  },
 }
 
 impl Into<Vec<u8>> for &Command {
@@ -107,9 +110,15 @@ impl Command {
         ]);
         buf.resize(20, 0);
       }
-      Command::KeyColor => {
+      Command::KeyColor {
+        indexes,
+        brightness,
+      } => {
         buf.extend_from_slice(&[0x12, 0xff, 0x0c, 0x3d, 0x00, 0x01, 0x00, 0x0c]);
-        buf.extend_from_slice(&[/* key index, r, g, b */]); // up to 12 times
+        indexes.iter().for_each(|&index| {
+          buf.extend_from_slice(&[index, *brightness, *brightness, *brightness]);
+          // up to 12 times
+        });
         buf.resize(64, 0);
       }
     }

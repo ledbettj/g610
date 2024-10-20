@@ -35,4 +35,8 @@ impl<'a> Keyboard<'a> {
   pub fn exec(&self, cmd: &Command) -> Result<(), HidError> {
     cmd.write(&self.device)
   }
+
+  pub fn commit(&self) -> Result<(), HidError> {
+    self.exec(&Command::Commit)
+  }
 }
